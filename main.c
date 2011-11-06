@@ -1,5 +1,5 @@
 #define F_CPU 16000000L	/* Clock Frequency = 16MHz */
-#define NOTE_LENGTH 24;
+#define NOTE_LENGTH 1250L
 #include <inttypes.h>
 #include <avr/io.h>
 #include <util/delay.h>
@@ -7,18 +7,21 @@
 
 uint8_t led = 0x00;
 
-uint8_t fire[7] = {128,64,128,64,32,32,32};
+uint8_t fire[7] = {128,100,128,100,90,90,90};
 uint8_t num_notes = 7;
 
 uint8_t current_note = 0;
-uint8_t current_note_length = 0;
+uint16_t current_note_length = 0;
 
 uint8_t sound_active = 0;
+uint8_t fire_led_active = 0;
 
+// Trigger pull interrupt
 ISR(INT0_vect)
 {
-	if(!sound_active)
-		sound_active = 1;
+	sound_active = 1;
+	fire_led_active = 1;
+	OCR2A = fire[0];
 }
 
 // Interrupt to handle changes on pin 14 (PCINT0)
@@ -30,20 +33,52 @@ ISR(TIMER0_COMPA_vect)
 	}
 }
 
+ISR(TIMER1_COMPA_vect)
+{
+	if(fire_led_active)
+	{
+		TCCR1A |= _BV(COM1A1);
+	} else {
+		TCCR1A &= ~_BV(COM1A1);
+	}
+}
+
+ISR(TIMER2_COMPA_vect)
+{
+	if(sound_active == 1)
+	{
+		TCCR2A |= _BV(COM2B1);
+		if(current_note_length >= NOTE_LENGTH)
+		{
+			current_note_length = 0;
+			if(current_note >= num_notes)
+			{
+				current_note = 0;
+				sound_active = 0;
+				TCCR2A &= ~_BV(COM2B1);
+			} else {
+				current_note++;
+				OCR2A = fire[current_note];
+			}
+		} else {
+			current_note_length++;
+		}
+	}
+}
+
 int main() 
 {
 	// All port D pins are inputs except the hit status LEDs and Buzzer
-  DDRD=0b10001100;
+  DDRD=0b10001000;
 	// Operational LED pin set to output
 	DDRB=0b00100010;
-	DDRB &= ~_BV(DDB0);
+	//DDRB &= ~_BV(DDB0);
 
 	// Turn on power to operation LED and set pull-up resistor for IR signal in
 	PORTB=0b00100001;
 
 	// Start status LEDs in off mode
-	// Set the internal pull-up on D2
-	PORTD=0b10000100;
+	PORTD=0b10000000;
 
 	// Enable timer 0 with 8 prescaler
 	// Count for 26 microseconds
@@ -55,25 +90,28 @@ int main()
 	TIMSK0 = _BV(OCIE0A);
 
 	// Enable timer 1 with 8 prescaler
-	TCCR1A = _BV(COM1A1) | _BV(WGM10) | _BV(WGM11);
+	// TCCR1A = _BV(COM1A1) | _BV(WGM10) | _BV(WGM11);
+	TCCR1A = _BV(WGM10) | _BV(WGM11);
   TCCR1B = _BV(WGM12) | _BV(WGM13) | _BV(CS11);
   OCR1A = 0x0034;
 
-	// ENable output compare match
-	//TIMSK1 = _BV(OCIE1A);
+	// Enable output compare match
+	TIMSK1 = _BV(OCIE1A);
 
 	// Enable timer 2 with 32 prescaler
 	// Output disabled
-	TCCR2A = _BV(WGM20) | _BV(WGM21) | _BV(COM2B1);
+	// TCCR2A = _BV(WGM20) | _BV(WGM21) | _BV(COM2B1);
+	TCCR2A = _BV(WGM20) | _BV(WGM21);
 	TCCR2B = _BV(CS21) | _BV(CS20) | _BV(WGM22);
 	OCR2A = 128;
 	OCR2B = 16;
 
 	// Enable output compare match
-	TIMSK2 = _BV(OCIE2B);
+	TIMSK2 = _BV(OCIE2A);
 
 	// Enable interrupt on INT0 (pin 4)
-//	EIMSK = _BV(INT0);
+	EICRA = _BV(ISC01);
+	EIMSK = _BV(INT0);
 
 	// Enable interrupts according to registers
 	sei();
