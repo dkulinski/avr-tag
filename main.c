@@ -28,9 +28,9 @@ enum states { GAME_IN_PROGRESS, GAME_OVER };
 // Trigger pull interrupt
 ISR(INT0_vect)
 {
-	// sound_active = 1;
-	// fire_led_active = 1;
-	// OCR2A = fire[0];
+	 sound_active = 1;
+	 fire_led_active = 1;
+	 OCR2A = fire[0];
 }
 
 // Interrupt to handle changes on pin 14 (PCINT0)
@@ -39,6 +39,7 @@ ISR(TIMER0_COMPA_vect)
 	last_ir_in++;
 	if( ~PINB & _BV(PB0) )
 	{
+		led = 0x4f;
 		if(data_wait)
 		{
 			if(last_ir_in < 7)
@@ -116,11 +117,12 @@ int main()
 	// Start status LEDs in off mode
 	PORTD=0b10000000;
 
-	// Enable timer 0 with 8 prescaler
+	// Enable timer 0 with 64 prescaler
 	// Count for 26 microseconds
 	TCCR0A = _BV(WGM00) | _BV(WGM01);
-	TCCR0B = _BV(WGM02) | _BV(CS01);
-	OCR0A = 52;
+	//TCCR0B = _BV(WGM02) | _BV(CS01);
+	TCCR0B = _BV(WGM02) | _BV(CS01) | _BV(CS00);
+	OCR0A = 98;
 	
 	// Enable Output compare match
 	TIMSK0 = _BV(OCIE0A);
