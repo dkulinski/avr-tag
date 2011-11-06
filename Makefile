@@ -1,7 +1,7 @@
 CC=avr-gcc
 CXX=avr-g++
-CCOPTS=-Os -Wall -mmcu=atmega328
-CXXOPTS=-Os -Wall -mmcu=atmega328
+CCOPTS=-Os -Wall -mmcu=atmega328p
+CXXOPTS=-Os -Wall -mmcu=atmega328p
 OBJ2HEX=avr-objcopy
 MCU=atmega328
 
