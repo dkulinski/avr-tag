@@ -16,20 +16,56 @@ uint16_t current_note_length = 0;
 uint8_t sound_active = 0;
 uint8_t fire_led_active = 0;
 
+// IR reception variables
+uint8_t last_ir_in = 0;
+uint8_t curr_bit = 0;
+uint8_t header_received = 0;
+uint8_t data_wait = 0;
+uint16_t packet = 0x0000;
+
+enum states { GAME_IN_PROGRESS, GAME_OVER };
+
 // Trigger pull interrupt
 ISR(INT0_vect)
 {
-	sound_active = 1;
-	fire_led_active = 1;
-	OCR2A = fire[0];
+	// sound_active = 1;
+	// fire_led_active = 1;
+	// OCR2A = fire[0];
 }
 
 // Interrupt to handle changes on pin 14 (PCINT0)
 ISR(TIMER0_COMPA_vect)
 {
+	last_ir_in++;
 	if( ~PINB & _BV(PB0) )
 	{
-		led = 0x2f;
+		if(data_wait)
+		{
+			if(last_ir_in < 7)
+			{
+				return;
+			} else {
+				data_wait = 0;
+				last_ir_in = 0;
+			}
+		}
+		if(header_received == 0)
+		{
+			if(last_ir_in > 13 || last_ir_in < 17)
+			{
+				curr_bit++;
+				last_ir_in = 0;
+				if(curr_bit == 15)
+				{
+					data_wait = 1;
+					header_received = 1;
+					curr_bit = 0;
+					led = 0x4f;
+				}
+			}
+		} else {
+			
+		}
 	}
 }
 
@@ -116,16 +152,20 @@ int main()
 	// Enable interrupts according to registers
 	sei();
 
+	enum states curr_state = GAME_IN_PROGRESS;
+
   while(1)
   {
-
-		if(led > 0)
+		if(curr_state == GAME_IN_PROGRESS)
 		{
-			led--;
-			PORTD=0b00000000;
-		} else 
-		{
-			PORTD=0b10000000;	
+			if(led > 0)
+			{
+				led--;
+				PORTD=0b00000000;
+			} else 
+			{
+				PORTD=0b10000000;	
+			}
 		}
   }
   return 0;
