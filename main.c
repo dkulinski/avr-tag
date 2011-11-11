@@ -117,12 +117,12 @@ int main()
 	// Start status LEDs in off mode
 	PORTD=0b10000000;
 
-	// Enable timer 0 with 64 prescaler
+	// Enable timer 0 with 8 prescaler
 	// Count for 26 microseconds
 	TCCR0A = _BV(WGM00) | _BV(WGM01);
 	//TCCR0B = _BV(WGM02) | _BV(CS01);
-	TCCR0B = _BV(WGM02) | _BV(CS01) | _BV(CS00);
-	OCR0A = 98;
+	TCCR0B = _BV(WGM02) | _BV(CS01);
+	OCR0A = 52;
 	
 	// Enable Output compare match
 	TIMSK0 = _BV(OCIE0A);
@@ -142,7 +142,7 @@ int main()
 	TCCR2A = _BV(WGM20) | _BV(WGM21);
 	TCCR2B = _BV(CS21) | _BV(CS20) | _BV(WGM22);
 	OCR2A = 128;
-	OCR2B = 16;
+	OCR2B = 64;
 
 	// Enable output compare match
 	TIMSK2 = _BV(OCIE2A);
