@@ -121,8 +121,8 @@ int main()
 	// Count for 26 microseconds
 	TCCR0A = _BV(WGM00) | _BV(WGM01);
 	//TCCR0B = _BV(WGM02) | _BV(CS01);
-	TCCR0B = _BV(WGM02) | _BV(CS01) | _BV(CS00);
-	OCR0A = 98;
+	TCCR0B = _BV(WGM02) | _BV(CS01);
+	OCR0A = 52;
 	
 	// Enable Output compare match
 	TIMSK0 = _BV(OCIE0A);
