@@ -11,8 +11,7 @@ uint8_t current_note = 0;
 
 // Predefine sounds
 // x[0] = number of notes
-// x[1] = note length
-// x[2..(x[0]-1)] = notes
+// x[1..(x[0]-1)] = notes
 uint8_t fire[7] = {6,100,128,100,90,90,90};
 uint8_t beeper[129] = {8,
 32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,
