@@ -51,7 +51,7 @@ enum states current_state = GAME_WAIT;
 
 void beep()
 {
-	if(!current_note)
+	if(current_note < 1)
 	{
 		sound1 = beeper;
 		current_note = 1;
@@ -67,12 +67,14 @@ ISR(TIMER2_COMPA_vect)
 	if(current_note > 0)
 	{
 		TCCR2A |= _BV(COM2B1);
-		OCR2A = sound1[current_note];
-		OCR2B = sound1[current_note]/2;
 		if(current_note >= sound1[0])
 		{
 			current_note = 0;
 		} else {
+			// Always keep a 50% duty cycle to 
+			// maintain volume
+			OCR2A = sound1[current_note];
+			OCR2B = sound1[current_note]/2;
 			if(current_note_length >= note_length)
 			{
 				current_note_length = 0;
