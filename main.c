@@ -67,22 +67,23 @@ ISR(TIMER2_COMPA_vect)
 	if(current_note > 0)
 	{
 		TCCR2A |= _BV(COM2B1);
-		if(current_note >= sound1[0])
-		{
-			current_note = 0;
-		} else {
+		current_note = 0;
+//		if(current_note >= sound1[0])
+//		{
+//			current_note = 0;
+//		} else {
 			// Always keep a 50% duty cycle to 
 			// maintain volume
-			OCR2A = sound1[current_note];
-			OCR2B = sound1[current_note]/2;
-			if(current_note_length >= note_length)
-			{
-				current_note_length = 0;
-				current_note++;
-			} else {
-				current_note_length++;
-			}
-		} 
+//			OCR2A = sound1[current_note];
+//			OCR2B = sound1[current_note]/2;
+//			if(current_note_length >= note_length)
+//			{
+//				current_note_length = 0;
+//				current_note++;
+//			} else {
+//				current_note_length++;
+//			}
+//		} 
 	} else {
 		TCCR2A &= ~_BV(COM2B1);
 	}
@@ -98,9 +99,10 @@ int main()
 	PORTB |= STATUS_PIN;
 	
 	// Set piezo timer up
-	// Timer 3 with a 256 prescaler
+	// Timer 2 with a 1024 prescaler
 	TCCR2A = _BV(WGM20) | _BV(WGM21);
-	TCCR2B = _BV(CS20) | _BV(WGM22);
+	TCCR2B = _BV(CS22) | _BV(CS21);
+//	TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20) | _BV(WGM22);
 	//TCCR2B = _BV(CS22) | _BV(CS21) | _BV(WGM22);
 
 	// Interrupt enable mask
